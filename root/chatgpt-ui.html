@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html style="flex-wrap:wrap;height:100%;">
+
+<head>
+  <meta lang="zh-CN">
+  <meta charset="utf-8">
+  <title>对话页面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body style="height:100%;">
+  <header style="align-items: center;">
+    <h1 style="text-align: center;">对话页面</h1>
+  </header>
+  <div id="conversation"></div>
+</body>
+<footer style="flex-wrap: wrap;display:flex;margin-left:10%;margin-right:10%;">
+  <input type="text" id="message" placeholder="输入消息">
+  <button type="submit">发送</button>
+  <button type="clear_cache">清除缓存</button>
+  <style>
+    #message {
+      margin-left: 10%;
+      margin-right: 5%;
+      flex: auto;
+    }
+
+    #conversation {
+      flex: 70%;
+      min-height: 50%;
+      overflow-y: scroll;
+      margin-left: 10%;
+      margin-right: 10%;
+      margin-top: 10px;
+      margin-bottom: 50px;
+      align-content: center;
+    }
+  </style>
+</footer>
+<script>
+  const sendMessageButton = document.querySelector('footer button[type="submit"]');
+  const clearCacheButton = document.querySelector('footer button[type="clear_cache"]');
+
+  const conversation = document.getElementById('conversation');
+  const messageInput = document.getElementById('message');
+  const form = document.querySelector('form');
+  sendMessageButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) {
+      return;
+    }
+    const messageElement = document.createElement('div');
+    messageElement.textContent = "提问：" + message;
+    conversation.appendChild(messageElement);
+    messageInput.value = '';
+
+    fetch('/send-message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message
+      })
+    }).then(res => res.text())
+      .then(data => {
+        console.log(data)
+        const responseElement = document.createElement('div');
+        //responseElement.setAttribute("style")
+        responseElement.innerHTML = "ChatGPT: " + data;
+        conversation.appendChild(responseElement);
+        const ed = document.createElement('hr');
+        conversation.appendChild(ed);
+      });
+
+  });
+
+  clearCacheButton.addEventListener('click', function (event) {
+    event.preventDefault();
+
+    fetch('/clear_message', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: "clear_cache"
+      })
+    })
+
+  });
+
+</script>
+
+</html>

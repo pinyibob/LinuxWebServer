@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head --pinyibob的博客主页，希望能记录自己的经历>
+    <meta charset="utf-8">
+    <meta all right resolved，转载请备注原链接 />
+    <meta 编程记录；win客户端&&linux服务器&&音视频&&cpp&&python>
+    <title>pinyibob的回忆录</title>
+</head>
+
+<body id="meta-body">
+    <style>
+    #meta-body{
+        width: 100%;
+        padding-left: 15px;
+        padding-right: 15px;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 720px;
+    }
+    </style>
+    <header style="position:relative;display:flex;flex-wrap:wrap;align-items:center;">
+        <h2 style="text-align:left;">好问则裕, 水则资车</h2>
+        <div style="margin-left:5px;margin-right:auto;align-items:center;">
+            <input placeholder="搜索">
+            <button>搜索</button>
+        </div>
+        <div id="menu">
+            <ul style="display:flex;flex-direction:row;list-style:none;">
+                <li id="m0"> <a href="/a.asp" title="win client">win client</a> </li>
+                <li id="m0"> <a href="/b.asp" title="">linux server</a> </li>
+                <!--li id="m0"> <a href="/c.asp" title="">音视频</a> </li-->
+                <li id="m0"> <a href="/d.asp" title="">生活</a> </li>
+                <li id="m0"> <a href="/e.asp" title="">游戏</a> </li>
+            </ul>
+            <style>
+                #m0 {
+                    margin-left: 4px;
+                }
+            </style>
+        </div>
+    
+        <div>
+    
+        </div>
+    </header>
+    
+    <hr>
+    <div id="maincontent"  style="min-width:720px;">
+        <style>
+            #keybody {
+                display: flex;
+                flex-wrap: wrap;
+                align-content: center;
+            }
+        </style>
+        <div id="keybody">
+            <div style="flex:75%;max-width:75%;">
+                <p id="content-p">2023-04-11 <a href="/articles/advanced_linux_io_function.html">linux中的高级io函数</a><small>字数：，预计阅读时间</small></p>
+                <p id="content-p">2023-04-11 <a href="/articles/common_structureOfServer.html">常规服务器架构</a><small>字数：，预计阅读时间</small></p>
+            </div>
+            <div style="flex:25%;max-width:25%;">
+                <ul>推荐排序
+                    <li>linux中的高级io函数</li>
+                    <li>服务器常用架构</li>
+                </ul>
+                <hr>
+                <ul>时间排序
+                    <li>服务器常用架构</li>
+                    <li>linux中的高级io函数</li>
+                </ul>
+            </div>
+        </div>
+        <style>
+            #content-p {
+                text-align: left;
+                margin-left: 50px;
+            }
+        </style>
+    </div>
+    <div id="slider"></div>
+    <hr>
+    <div id="footer">
+        <p id="p1">all right reserved 转载请注明出处</p>
+    </div>
+    
+    </body>
+    <style>
+        * {
+            text-align: center;
+        }
+    </style>
+    <script>
+        let i1 = document.getElementById("menu");
+        const title = document.title;
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) {
+                document.title = "请不要离开我  QAQ";
+            } else {
+                document.title = "欢迎回来 ~o( =∩ω∩= )m";
+            }
+        });
+    </script>
+    
+    </html>
