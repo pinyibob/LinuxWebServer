@@ -31,7 +31,7 @@ WebServer::~WebServer()
 }
 
 void WebServer::init(int port, string user, string passWord, string databaseName, int log_write, 
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, int actor_model)
+                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log, actor_mode actor_model)
 {
     m_port = port;
     m_user = user;
@@ -111,6 +111,8 @@ void WebServer::eventListen()
     //优雅关闭连接
     if (0 == m_OPT_LINGER)
     {
+        //参数 1 ： 是否开启llinger；
+        //参数 2 ： 优雅关闭系统等待时间； 错误使用会造成大量时间浪费和堵塞
         struct linger tmp = {0, 1};
         setsockopt(m_listenfd, SOL_SOCKET, SO_LINGER, &tmp, sizeof(tmp));
     }
@@ -162,13 +164,15 @@ void WebServer::eventListen()
 
 void WebServer::timer(int connfd, struct sockaddr_in client_address)
 {
-    users[connfd].init(connfd, client_address, m_root,
+    http_conn* ic = &users[connfd];
+    ic->init(connfd, client_address, m_root,
      m_CONNTrigmode, m_close_log, m_user, m_passWord, m_databaseName);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
     users_timer[connfd].address = client_address;
     users_timer[connfd].sockfd = connfd;
+
     util_timer *timer = new util_timer;
     timer->user_data = &users_timer[connfd];
     timer->cb_func = cb_func;
@@ -186,10 +190,10 @@ void WebServer::adjust_timer(util_timer *timer)
     timer->expire = cur + 3 * TIMESLOT;
     utils.m_timer_lst.adjust_timer(timer);
 
-    LOG_INFO("%s", "adjust timer once");
+    //LOG_INFO("%s", "adjust timer once");
 }
 
-void WebServer::deal_timer(util_timer *timer, int sockfd)
+void WebServer::web_close_socket(util_timer *timer, int sockfd)
 {
     timer->cb_func(&users_timer[sockfd]);
     if (timer)
@@ -247,8 +251,8 @@ bool WebServer::dealclinetdata()
 bool WebServer::dealwithsignal(bool &timeout, bool &stop_server)
 {
     int ret = 0;
-    int sig;
-    char signals[1024];
+    char signals[1024]{'\0'};
+
     ret = recv(m_pipefd[0], signals, sizeof(signals), 0);
     if (ret == -1)
     {
@@ -285,7 +289,7 @@ void WebServer::dealwithread(int sockfd)
     util_timer *timer = users_timer[sockfd].timer;
 
     //reactor
-    if (1 == m_actormodel)
+    if (actor_mode::reactor == m_actormodel)
     {
         if (timer)
         {
@@ -301,7 +305,7 @@ void WebServer::dealwithread(int sockfd)
             {
                 if (1 == users[sockfd].timer_flag)
                 {
-                    deal_timer(timer, sockfd);
+                    web_close_socket(timer, sockfd);
                     users[sockfd].timer_flag = 0;
                 }
                 users[sockfd].improv = 0;
@@ -326,7 +330,7 @@ void WebServer::dealwithread(int sockfd)
         }
         else
         {
-            deal_timer(timer, sockfd);
+            web_close_socket(timer, sockfd);
         }
     }
 }
@@ -335,7 +339,7 @@ void WebServer::dealwithwrite(int sockfd)
 {
     util_timer *timer = users_timer[sockfd].timer;
     //reactor
-    if (1 == m_actormodel)
+    if (reactor == m_actormodel)
     {
         if (timer)
         {
@@ -350,7 +354,7 @@ void WebServer::dealwithwrite(int sockfd)
             {
                 if (1 == users[sockfd].timer_flag)
                 {
-                    deal_timer(timer, sockfd);
+                    web_close_socket(timer, sockfd);
                     users[sockfd].timer_flag = 0;
                 }
                 users[sockfd].improv = 0;
@@ -372,7 +376,7 @@ void WebServer::dealwithwrite(int sockfd)
         }
         else
         {
-            deal_timer(timer, sockfd);
+            web_close_socket(timer, sockfd);
         }
     }
 }
@@ -408,7 +412,7 @@ void WebServer::eventLoop()
             {
                 //服务器端关闭连接，移除对应的定时器
                 util_timer *timer = users_timer[sockfd].timer;
-                deal_timer(timer, sockfd);
+                web_close_socket(timer, sockfd);
             }
             //处理信号
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN))
@@ -427,6 +431,7 @@ void WebServer::eventLoop()
                 dealwithwrite(sockfd);
             }
         }
+
         if (timeout)
         {
             utils.timer_handler();

@@ -4,7 +4,8 @@
 #include <fstream>
 #include <cstring>
 
-#include "httplib.h"
+#include "Document.h"
+//include "httplib.h"
 
 //include <cpprest/http_listener.h>
 
@@ -24,6 +25,7 @@ map<string, string> users;
 
 void http_conn::initmysql_result(connection_pool *connPool)
 {
+    return;
     //先从连接池中取一个连接
     MYSQL *mysql = NULL;
     connectionRAII mysqlcon(&mysql, connPool);
@@ -118,28 +120,7 @@ const size_t DATA_CHUNK_SIZE = 4;
 void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMode,
                      int close_log, string user, string passwd, string sqlname)
 {
-
     _chat_imp = std::unique_ptr<chatGPT>(new chatGPT(""));
-
-    #if 0
-    using namespace httplib;
-    Server svr;
-    int ret = svr.listen("localhost", 8006);
-
-    svr.Get("/send_message", [&](const Request &req, Response &res)
-            {
-  auto data = new std::string(m_content);
-
-  res.set_content_provider(
-    data->size(), // Content length
-    "text/plain", // Content type
-    [data](size_t offset, size_t length, DataSink &sink) {
-      const auto &d = *data;
-      sink.write(&d[offset], std::min(length, DATA_CHUNK_SIZE));
-      return true; // return 'false' if you want to cancel the process.
-    },
-    [data](bool success) { delete data; }); });
-    #endif
 
     m_sockfd = sockfd;
     m_address = addr;
@@ -269,38 +250,44 @@ bool http_conn::read_once()
 //解析http请求行，获得请求方法，目标url及http版本号
 http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
 {
+    LOG_INFO("%s", text);
     m_url = strpbrk(text, " \t");
     if (!m_url)
     {
         return BAD_REQUEST;
     }
+    //空格或制表符替换为中止字符
     *m_url++ = '\0';
+    
+    //重新赋值，中止字符已经被设置
     char *method = text;
     if (strcasecmp(method, "GET") == 0)
         m_method = GET;
     else if (strcasecmp(method, "POST") == 0)
     {
         m_method = POST;
-        cgi = 1;
     }
     else
         return BAD_REQUEST;
+
     m_url += strspn(m_url, " \t");
     m_version = strpbrk(m_url, " \t");
     if (!m_version)
         return BAD_REQUEST;
     *m_version++ = '\0';
     m_version += strspn(m_version, " \t");
-    if (strcasecmp(m_version, "HTTP/1.1") != 0 &&
-    strcasecmp(m_version, "HTTP/1.0") != 0)
+
+    //if (strcasecmp(m_version, "HTTP/1.1") != 0 &&
+    //strcasecmp(m_version, "HTTP/1.0") != 0)
+    if (strcasecmp(m_version, "HTTP/1.1") != 0)
         return BAD_REQUEST;
+
     if (strncasecmp(m_url, "http://", 7) == 0)
     {
         m_url += 7;
         m_url = strchr(m_url, '/');
     }
-
-    if (strncasecmp(m_url, "https://", 8) == 0)
+    else if(strncasecmp(m_url, "https://", 8) == 0)
     {
         m_url += 8;
         m_url = strchr(m_url, '/');
@@ -309,9 +296,9 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
     if (!m_url || m_url[0] != '/')
         return BAD_REQUEST;
 
+    //直接访问ip地址时，输出播客主页
     if (strlen(m_url) == 1)
         strcat(m_url, "pinyibob.html");
-    //    return NO_RESOURCE;
 
     m_check_state = CHECK_STATE_HEADER;
     return NO_REQUEST;
@@ -320,6 +307,7 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text)
 //解析http请求的一个头部信息
 http_conn::HTTP_CODE http_conn::parse_headers(char *text)
 {
+    LOG_INFO("%s", text);
     if (text[0] == '\0')
     {
         if (m_content_length != 0)
@@ -352,7 +340,7 @@ http_conn::HTTP_CODE http_conn::parse_headers(char *text)
     }
     else
     {
-        LOG_INFO("oop!unknow header: %s", text);
+        ;//LOG_INFO("oop!unknow header: %s", text);
     }
     return NO_REQUEST;
 }
@@ -360,11 +348,15 @@ http_conn::HTTP_CODE http_conn::parse_headers(char *text)
 //判断http请求是否被完整读入
 http_conn::HTTP_CODE http_conn::parse_content(char *text)
 {
+    LOG_INFO("%s", text);
     if (m_read_idx >= (m_content_length + m_checked_idx))
-    {
+    {  
+        auto actual_len = strlen(text);
+        //if(actual_len != m_content_length)
+        //    return BAD_REQUEST;
         text[m_content_length] = '\0';
-        //POST请求中最后为输入的用户名和密码
-        m_string = text;
+        //m_content.assign(text, actual_len);
+        m_content = text;
         return GET_REQUEST;
     }
     return NO_REQUEST;
@@ -381,7 +373,7 @@ http_conn::HTTP_CODE http_conn::process_read()
     {
         text = get_line();
         m_start_line = m_checked_idx;
-        LOG_INFO("%s", text);
+        //LOG_INFO("%s", text);
         switch (m_check_state)
         {
         case CHECK_STATE_REQUESTLINE:
@@ -404,7 +396,6 @@ http_conn::HTTP_CODE http_conn::process_read()
         }
         case CHECK_STATE_CONTENT:
         {
-            m_content.assign(text);
             ret = parse_content(text);
             if (ret == GET_REQUEST)
                 return do_request();
@@ -422,93 +413,41 @@ http_conn::HTTP_CODE http_conn::do_request()
 {
     strcpy(m_real_file, doc_root);
     int len = strlen(doc_root);
-    const char *p = strrchr(m_url, '/');
+    const char *p = strchr(m_url, '/');
     const char* cmd_name = p + 1;
 
-#if 0
-    //处理cgi
-    if (cgi == 1 && (*(p + 1) == '2' || *(p + 1) == '3'))
+    if(m_method == OPTIONS)
     {
-
-        //根据标志判断是登录检测还是注册检测
-        char flag = m_url[1];
-
-        char *m_url_real = (char *)malloc(sizeof(char) * 200);
-        strcpy(m_url_real, "/");
-        strcat(m_url_real, m_url + 2);
-        strncpy(m_real_file + len, m_url_real, FILENAME_LEN - len - 1);
-        free(m_url_real);
-
-        //将用户名和密码提取出来
-        //user=123&passwd=123
-        char name[100], password[100];
-        int i;
-        for (i = 5; m_string[i] != '&'; ++i)
-            name[i - 5] = m_string[i];
-        name[i - 5] = '\0';
-
-        int j = 0;
-        for (i = i + 10; m_string[i] != '\0'; ++i, ++j)
-            password[j] = m_string[i];
-        password[j] = '\0';
-
-        if (*(p + 1) == '3')
-        {
-            //如果是注册，先检测数据库中是否有重名的
-            //没有重名的，进行增加数据
-            char *sql_insert = (char *)malloc(sizeof(char) * 200);
-            strcpy(sql_insert, "INSERT INTO user(username, passwd) VALUES(");
-            strcat(sql_insert, "'");
-            strcat(sql_insert, name);
-            strcat(sql_insert, "', '");
-            strcat(sql_insert, password);
-            strcat(sql_insert, "')");
-
-            if (users.find(name) == users.end())
-            {
-                m_lock.lock();
-                int res = mysql_query(mysql, sql_insert);
-                users.insert(pair<string, string>(name, password));
-                m_lock.unlock();
-
-                if (!res)
-                    strcpy(m_url, "/log.html");
-                else
-                    strcpy(m_url, "/registerError.html");
-            }
-            else
-                strcpy(m_url, "/registerError.html");
-        }
-        //如果是登录，直接判断
-        //若浏览器端输入的用户名和密码在表中可以查找到，返回1，否则返回0
-        else if (*(p + 1) == '2')
-        {
-            if (users.find(name) != users.end() && users[name] == password)
-                strcpy(m_url, "/welcome.html");
-            else
-                strcpy(m_url, "/logError.html");
-        }
+        const char* rep = "目前只支持GET方法";
+        write_content_to_buff(rep);
+        return MSG_REQUEST;
     }
-#endif
+    //else if(m_method != GET)
+    //{
+    //    const char* rep = "目前只支持GET方法";
+    //    write_content_to_buff(rep);
+    //    return MSG_REQUEST;
+    //}
 
     if(strcmp(cmd_name, "send-message") == 0)
     {
         Json::CharReaderBuilder ir;
         auto irw = ir.newCharReader();
         Json::Value iv;
-        Json::String error;
-        irw->parse(&m_content.front(), &m_content.back(), &iv, &error);
+        std::string error;
+        std::string istr;
+        istr.assign(m_content, m_content_length);
+        irw->parse(&istr.front(), &istr.back(), &iv, &error);
         
-        m_content = _chat_imp->ask(iv["message"].asString().c_str());
+        istr = _chat_imp->ask(iv["message"].asString().c_str());
 
         const char *std_error = "{\"message\":\"error!\"}";
 
         // content to return 
         //const char *std_r = "{\"message\":\"%s\"}";
         const char *std_r = "%s";
-        m_strBufLen = snprintf(nullptr, 0, std_r, m_content.data());
-        m_strBuf = new char[m_strBufLen + 1];
-        snprintf(m_strBuf, m_strBufLen + 1, std_r, m_content.data());
+
+        write_content_to_buff(istr.c_str());
         
         return MSG_REQUEST;
     }
@@ -519,17 +458,30 @@ http_conn::HTTP_CODE http_conn::do_request()
     }
     else if(strcmp(cmd_name, "pinyibob.html") == 0)
     {
-        strncpy(m_real_file + len, m_url, 256);
+        strncpy(m_real_file + len, m_url, strlen(m_url));
     }
     else if(strcmp(cmd_name, "chatgpt-ui.html") == 0)
     {
-        strncpy(m_real_file + len, m_url, 256);
+        strncpy(m_real_file + len, m_url, strlen(m_url));
     }
-    else 
-        strncpy(m_real_file + len, m_url, 256);
+    else if(strncmp(cmd_name, "articles", strlen("articles")) == 0)
+    {
+        strncpy(m_real_file + len, m_url, strlen(m_url));
+        Document iw(m_real_file);
+        auto res = iw.md2string();
 
+        write_content_to_buff(res.c_str());
+        return MSG_REQUEST;
+    }
+    else
+        strncpy(m_real_file + len, m_url, strlen(m_url));
+        
     if (stat(m_real_file, &m_file_stat) < 0)
-        return NO_RESOURCE;
+    {
+        const char* rep = "手动档服务器，没有option post，文件服务也只能访问root内容，不要再试了，你再这样我报警了, 八嘎！";
+
+        return MSG_REQUEST;
+    }
 
     if (!(m_file_stat.st_mode & S_IROTH))
         return FORBIDDEN_REQUEST;
@@ -538,22 +490,17 @@ http_conn::HTTP_CODE http_conn::do_request()
         return BAD_REQUEST;
 
     int fd = open(m_real_file, O_RDONLY);
+    m_send_content_buff = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
-    delete m_strBuf;
-    m_strBuf = new char[m_file_stat.st_size];
-
-    read(fd, m_strBuf, m_file_stat.st_size);
-    //m_strBuf = (char *)mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-    m_strBufLen = m_file_stat.st_size;
     close(fd);
     return FILE_REQUEST;
 }
 void http_conn::unmap()
 {
-    if (m_file_address)
+    if (m_send_content_buff)
     {
-        munmap(m_file_address, m_file_stat.st_size);
-        m_file_address = 0;
+        munmap(m_send_content_buff, m_file_stat.st_size);
+        m_send_content_buff = 0;
     }
 }
 bool http_conn::write()
@@ -569,10 +516,7 @@ bool http_conn::write()
 
     while (1)
     {
-        //std::cout << (char*)m_iv[0].iov_base << std::endl;
-        //std::cout << (char*)m_iv[1].iov_base << std::endl;
         temp = writev(m_sockfd, m_iv, m_iv_count);
-
 
         if (temp < 0)
         {
@@ -590,7 +534,7 @@ bool http_conn::write()
         if (bytes_have_send >= m_iv[0].iov_len)
         {
             m_iv[0].iov_len = 0;
-            m_iv[1].iov_base = m_write_buf + (bytes_have_send - m_write_idx);
+            m_iv[1].iov_base = m_send_content_buff + (bytes_have_send - m_write_idx);
             m_iv[1].iov_len = bytes_to_send;
         }
         else
@@ -601,14 +545,8 @@ bool http_conn::write()
 
         if (bytes_to_send <= 0)
         {
-            //unmap();
+            unmap();
             modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
-
-            if(m_strBuf)
-            {
-                delete m_strBuf;
-                m_strBuf = nullptr;
-            }
 
             if (m_linger)
             {
@@ -637,7 +575,7 @@ bool http_conn::add_response(const char *format, ...)
     m_write_idx += len;
     va_end(arg_list);
 
-    LOG_INFO("request:%s", m_write_buf);
+    //LOG_INFO("request:%s", m_write_buf);
 
     return true;
 }
@@ -707,6 +645,7 @@ bool http_conn::process_write(HTTP_CODE ret)
             return false;
         break;
     }
+    case MSG_REQUEST:
     case FILE_REQUEST:
     {
         add_status_line(200, ok_200_title);
@@ -715,10 +654,8 @@ bool http_conn::process_write(HTTP_CODE ret)
             add_headers(m_file_stat.st_size);
             m_iv[0].iov_base = m_write_buf;
             m_iv[0].iov_len = m_write_idx;
-            //m_iv[1].iov_base = m_file_address;
-            //m_iv[1].iov_len = m_file_stat.st_size;
-            m_iv[1].iov_base = m_strBuf;
-            m_iv[1].iov_len = m_strBufLen;
+            m_iv[1].iov_base = m_send_content_buff;
+            m_iv[1].iov_len = m_file_stat.st_size;
             m_iv_count = 2;
             bytes_to_send = m_write_idx + m_file_stat.st_size;
             return true;
@@ -731,21 +668,7 @@ bool http_conn::process_write(HTTP_CODE ret)
                 return false;
         }
     }
-    case MSG_REQUEST:
-    {
-        add_status_line(200, ok_200_title);
-        //add_headers(m_content.length());
-        add_headers_response(m_strBufLen);
 
-        m_iv[0].iov_base = m_write_buf;
-        m_iv[0].iov_len = m_write_idx;
-        m_iv[1].iov_base = m_strBuf;
-        m_iv[1].iov_len = m_strBufLen;
-
-        m_iv_count = 2;
-        bytes_to_send = m_write_idx + m_strBufLen;
-        return true;
-    }
     default:
         return false;
     }
@@ -755,6 +678,19 @@ bool http_conn::process_write(HTTP_CODE ret)
     bytes_to_send = m_write_idx;
     return true;
 }
+
+void http_conn::write_content_to_buff(const char *rep)
+{
+    if(!rep) return;
+
+    auto ilen = strlen(rep);
+    auto bufflen = ilen + 1;
+    m_file_stat.st_size = bufflen;
+    m_send_content_buff = new char[ilen + 1];
+    m_send_content_buff[ilen] = '\0';
+    memcpy(m_send_content_buff, rep, ilen);
+}
+
 void http_conn::process()
 {
     HTTP_CODE read_ret = process_read();

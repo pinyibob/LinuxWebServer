@@ -1,5 +1,6 @@
 #ifndef HTTPCONNECTION_H
 #define HTTPCONNECTION_H
+
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
@@ -20,6 +21,7 @@
 #include <sys/wait.h>
 #include <sys/uio.h>
 #include <map>
+#include <string>
 
 #include "../lock/locker.h"
 #include "../CGImysql/sql_connection_pool.h"
@@ -32,8 +34,8 @@ class http_conn
 {
 public:
     static const int FILENAME_LEN = 200;
-    static const int READ_BUFFER_SIZE = 2048;
-    static const int WRITE_BUFFER_SIZE = 1024;
+    static const int READ_BUFFER_SIZE = 1024 * 2;
+    static const int WRITE_BUFFER_SIZE = 1024 * 2;
     enum METHOD
     {
         GET = 0,
@@ -94,6 +96,7 @@ private:
     void init();
     HTTP_CODE process_read();
     bool process_write(HTTP_CODE ret);
+    void write_content_to_buff(const char*);
     HTTP_CODE parse_request_line(char *text);
     HTTP_CODE parse_headers(char *text);
     HTTP_CODE parse_content(char *text);
@@ -106,6 +109,7 @@ private:
     bool add_content(const char *content);
     bool add_status_line(int status, const char *title);
     bool add_headers(int content_length);
+    bool add_cookie();
     bool add_headers_response(int content_length);
     bool add_content_type();
     bool add_content_length(int content_length);
@@ -119,6 +123,7 @@ public:
     int m_state;  //读为0, 写为1
 
 private:
+    // base socket RW structure
     int m_sockfd;
     sockaddr_in m_address;
     char m_read_buf[READ_BUFFER_SIZE];
@@ -127,34 +132,41 @@ private:
     int m_start_line;
     char m_write_buf[WRITE_BUFFER_SIZE];
     int m_write_idx;
+
     CHECK_STATE m_check_state;
     METHOD m_method;
+
+    // request info
     char m_real_file[FILENAME_LEN];
     char *m_url;
     char *m_version;
     char *m_host;
-    long m_content_length;
+
+    // 储存用户请求的content内容，长度
     std::string m_content;
-    bool m_linger;
+    int m_content_length = 0;
+
+    // 是否优雅关闭链接
+    bool m_linger = false;
+
     // file return
-    char *m_file_address;
+    char *m_send_content_buff = nullptr;
+    // 返回文件时，文件的主要类； 返回信息时，只是借用size
     struct stat m_file_stat;
+    // socket send iovec
     struct iovec m_iv[2];
-    // string return
-    char* m_strBuf = nullptr;
-    size_t m_strBufLen = 0;
 
     int m_iv_count;
     int cgi;        //是否启用的POST
-    char *m_string; //存储请求头数据
     int bytes_to_send;
     int bytes_have_send;
-    char *doc_root;
 
-    map<string, string> m_users;
+    char *doc_root = nullptr;
+
     int m_TRIGMode;
     int m_close_log;
 
+    //应用数据
     char sql_user[100];
     char sql_passwd[100];
     char sql_name[100];

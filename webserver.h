@@ -14,9 +14,9 @@
 
 #include "./threadpool/threadpool.h"
 #include "./http/http_conn.h"
+//#include "./config.h"
 
-const int MAX_FD = 65536;           //最大文件描述符
-//const int MAX_FD = 20000;           //最大文件描述符
+const int MAX_FD = 50;           //最大文件描述符
 const int MAX_EVENT_NUMBER = 10000; //最大事件数
 const int TIMESLOT = 5;             //最小超时单位
 
@@ -28,7 +28,7 @@ public:
 
     void init(int port , string user, string passWord, string databaseName,
               int log_write , int opt_linger, int trigmode, int sql_num,
-              int thread_num, int close_log, int actor_model);
+              int thread_num, int close_log, actor_mode actor_model);
 
     void thread_pool();
     void sql_pool();
@@ -38,7 +38,7 @@ public:
     void eventLoop();
     void timer(int connfd, struct sockaddr_in client_address);
     void adjust_timer(util_timer *timer);
-    void deal_timer(util_timer *timer, int sockfd);
+    void web_close_socket(util_timer *timer, int sockfd);
     bool dealclinetdata();
     bool dealwithsignal(bool& timeout, bool& stop_server);
     void dealwithread(int sockfd);
@@ -47,13 +47,16 @@ public:
 public:
     //基础
     int m_port;
-    char *m_root;
+    int m_listenfd;
+    //工作目录
+    char *m_root = nullptr;
     int m_log_write;
     int m_close_log;
-    int m_actormodel;
-
+    //一段连接到epoll监听事件
     int m_pipefd[2];
     int m_epollfd;
+
+    //http连接功能类
     http_conn *users;
 
     //数据库相关
@@ -70,9 +73,14 @@ public:
     //epoll_event相关
     epoll_event events[MAX_EVENT_NUMBER];
 
-    int m_listenfd;
+    //proactor || reactor
+    actor_mode m_actormodel;
+    //是否开启keep alive
     int m_OPT_LINGER;
     int m_TRIGMode;
+
+    //一次接听所有的socket还是一次接一个
+    //这里不肯定要接听完所有的吗？epoll中又不会拿出第二次；
     int m_LISTENTrigmode;
     int m_CONNTrigmode;
 

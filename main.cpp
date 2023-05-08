@@ -1,11 +1,15 @@
+#include "webserver.h"
 #include "config.h"
+
+#include <string>
 
 int main(int argc, char *argv[])
 {
+    using std::string;
     //需要修改的数据库信息,登录名,密码,库名
     string user = "root";
     string passwd = "123456";
-    string databasename = "yourdb";
+    string databasename = "chatgpt_service";
 
     //命令行解析
     Config config;
