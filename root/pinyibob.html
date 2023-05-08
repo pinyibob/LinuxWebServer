@@ -9,57 +9,51 @@
 </head>
 
 <body id="meta-body">
-    <style>
-    #meta-body{
-        width: 100%;
-        padding-left: 15px;
-        padding-right: 15px;
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 720px;
-    }
-    </style>
-    <header style="position:relative;display:flex;flex-wrap:wrap;align-items:center;">
-        <h2 style="text-align:left;">好问则裕, 水则资车</h2>
-        <div style="margin-left:5px;margin-right:auto;align-items:center;">
-            <input placeholder="搜索">
-            <button>搜索</button>
+    <header id='keyHeader'>
+        <h2 style="text-align:left;">是真名士自风流</h2>
+        <div style="flex-wrap: wrap;position: relative;display: flex;align-items: center;">
+            <div id="menu">
+                <ul id = 'head_menu'>
+                    <li class="head_menu_item" id="head_filter_back" onclick="filterCnt(';')"> <a>单项筛选器</a> </li>
+                    <li class="head_menu_item" onclick="filterCnt('win client')"> <a>win client</a> </li>
+                    <li class="head_menu_item" onclick="filterCnt('linux server')"> <a>Linux server</a> </li>
+                    <!--li id="head_menu_item"> <a href="/c.asp" title="">音视频</a> </li-->
+                    <li class="head_menu_item" onclick="filterCnt('sight')"> <a>见闻</a> </li>
+                    <li class="head_menu_item" onclick="filterCnt('game')"> <a>游戏</a> </li>
+                </ul>
+            </div>
+            <div style="margin-left:auto;margin-right:5px;align-items:center;">
+                <input id='input_search' placeholder="搜索">
+                <button id='btn_search'>搜索</button>
+            </div>
         </div>
-        <div id="menu">
-            <ul style="display:flex;flex-direction:row;list-style:none;">
-                <li id="m0"> <a href="/a.asp" title="win client">win client</a> </li>
-                <li id="m0"> <a href="/b.asp" title="">linux server</a> </li>
-                <!--li id="m0"> <a href="/c.asp" title="">音视频</a> </li-->
-                <li id="m0"> <a href="/d.asp" title="">生活</a> </li>
-                <li id="m0"> <a href="/e.asp" title="">游戏</a> </li>
-            </ul>
-            <style>
-                #m0 {
-                    margin-left: 4px;
-                }
-            </style>
-        </div>
-    
+
         <div>
-    
+
         </div>
     </header>
-    
     <hr>
-    <div id="maincontent"  style="min-width:720px;">
-        <style>
-            #keybody {
-                display: flex;
-                flex-wrap: wrap;
-                align-content: center;
-            }
-        </style>
+    <div id="maincontent" style="min-width:720px;">
         <div id="keybody">
-            <div style="flex:75%;max-width:75%;">
-                <p id="content-p">2023-04-11 <a href="/articles/advanced_linux_io_function.html">linux中的高级io函数</a><small>字数：，预计阅读时间</small></p>
-                <p id="content-p">2023-04-11 <a href="/articles/common_structureOfServer.html">常规服务器架构</a><small>字数：，预计阅读时间</small></p>
+            <div id="artical_content_total" style="flex:60%;max-width:75%;display: none;">
+                <button id="back_home1" style="text-align:right;display: block;" onclick="backtoMenu()">回到主页</button>
+                <div id="artical_content"></div>
+                <button id="back_home2" style="margin-left:auto;text-align:right;display: block;"
+                    onclick="backtoMenu()">回到主页</button>
             </div>
-            <div style="flex:25%;max-width:25%;">
+            <div id="artical_menu" style="flex:60%;max-width:75%;margin-right:10%;">
+                <p class="content-p" id="article-4">2023-04-11 <a onclick="loadHtml('/articles/linuxServer_keyMethod.md')">LinuxServer中的关键词</a><small>字数：，预计阅读时间</small>
+                </p>
+                <p class="content-p" id="article-0">2023-04-11 <a onclick="loadHtml('/articles/advanced_linux_io_function.html')">linux中的高级io函数</a><small>字数：，预计阅读时间</small>
+                </p>
+                <p class="content-p" id="article-1">2023-04-11 <a onclick="loadHtml('/articles/common_structureOfServer.html')">常规服务器架构</a><small>字数：，预计阅读时间</small>
+                </p>
+                <p class="content-p" id="article-2">2023-04-29 <a onclick="loadHtml('/articles/china_house.html')">房地产的话题包含的关键切入点</a><small>字数：，预计阅读时间</small>
+                </p>
+                <p class="content-p" id="article-3">2023-04-29 <a onclick="loadHtml('/articles/rumors_about_china_house.html')">房地产话题的常规营销话术</a><small>字数：，预计阅读时间</small>
+                </p>
+            </div>
+            <div style="flex:20%;max-width:25%;">
                 <ul>推荐排序
                     <li>linux中的高级io函数</li>
                     <li>服务器常用架构</li>
@@ -69,38 +63,206 @@
                     <li>服务器常用架构</li>
                     <li>linux中的高级io函数</li>
                 </ul>
+                <hr>
+                <ul>小程序
+                    <li><a href="/chatgpt-ui.html">chatgpt</a></li>
+                    <li>stable_diffusion_2.1v</li>
+                </ul>
             </div>
         </div>
-        <style>
-            #content-p {
-                text-align: left;
-                margin-left: 50px;
-            }
-        </style>
     </div>
     <div id="slider"></div>
     <hr>
     <div id="footer">
         <p id="p1">all right reserved 转载请注明出处</p>
     </div>
-    
-    </body>
-    <style>
-        * {
-            text-align: center;
-        }
-    </style>
-    <script>
-        let i1 = document.getElementById("menu");
-        const title = document.title;
 
-        document.addEventListener('visibilitychange', function () {
-            if (document.hidden) {
-                document.title = "请不要离开我  QAQ";
-            } else {
-                document.title = "欢迎回来 ~o( =∩ω∩= )m";
-            }
-        });
-    </script>
+</body>
+<style>
+    #head_menu{
+        display:flex;
+        flex-direction:row;
+        padding-left: 5px;
+        list-style:none;
+    }
+
+    .head_menu_item {
+        background-color: chartreuse;
+        text-decoration: underline;
+        margin: 4px;
+        margin-left: 8px;
+    }
+
+    #meta-body {
+        /*width: 100%;*/
+        padding-left: 10%;
+        padding-right: 10%;
+        margin-left: auto;
+        margin-right: auto;
+        /*max-width: 720px;*/
+    }
+
+    #artical_menu a{
+        color:blue;
+        text-decoration: underline;
+        cursor:pointer;
+        margin-right: 40px;
+    }
+
+    #keyHeader {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #keybody {
+        min-height: 600px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: top;
+    }
+
+    .content-p {
+        text-align: left;
+        margin-left: 50px;
+    }
+
+    #footer {
+        text-align: center;
+    }
     
-    </html>
+</style>
+<script>
+    class article_info {
+        constructor(name, adr, readTimes, tag) {
+            this._adr = adr;
+            this._name = name;
+            this._read_times = readTimes;
+            this._tag = tag;
+        }
+    }
+
+    let artinfoMap = {
+        "article-3": new article_info("LinuxServer中的关键词", "linuxServer_keyMethod", 0, "linux server;"),
+        "article-0": new article_info("linux中的高级io函数", "advanced_linux_io_function", 0, "linux server;"),
+        "article-1": new article_info("常规服务器架构", "common_structureOfServer", 0, "linux server;"),
+        "article-2": new article_info("房地产的话题包含的关键切入点", "china_house", 0, "sight;"),
+        "article-3": new article_info("房地产话题的常规营销话术", "rumors_about_china_house", 0, "sight;")
+    }
+
+
+    let i1 = document.getElementById("menu");
+    const title = document.title;
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+            document.title = "请不要离开我  QAQ";
+        } else {
+            document.title = "欢迎回来 ~o( =∩ω∩= )m";
+        }
+    });
+
+
+    function loadHtml(url) {
+        // 创建XMLHttpRequest对象
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                menu = document.getElementById("artical_menu");
+
+                menu.style.display = 'none';
+
+                document.getElementById("artical_content_total").style.display = 'block';
+                cnt = document.getElementById("artical_content");
+                cnt.innerHTML = xhr.responseText;
+
+            }
+        };
+        // 发送GET请求
+        xhr.open("GET", url, true);
+        xhr.send();
+    }
+
+    article_menu = document.getElementById("artical_menu");
+    function backtoMenu() {
+        document.getElementById("artical_content_total").style.display = 'none';
+        article_menu.style.display = 'block';
+    };
+
+    function filterCnt(tag) {
+        backtoMenu();
+        //let childs = article_menu.childNodes;
+        for (let [key, value] of Object.entries(artinfoMap)) {
+            if (value._tag.includes(tag)) {
+                //console.log('tag符合要求,id=%s', key);
+                document.getElementById(key).style.display = 'block';
+            }
+            else {
+                //console.log('tag隐藏,id=%s', key);
+                document.getElementById(key).style.display = 'none';
+            }
+        }
+
+        let khf = document.getElementById('head_filter_back');
+        if (tag == ";")
+            khf.innerText = '单项筛选器';
+        else
+            khf.innerText = '取消筛选';
+
+    };
+
+    let input = document.getElementById("input_search");
+    let search_btn = document.getElementById("btn_search");
+    // 获取 input 元素和其父元素
+    const parent = input.parentNode;
+    function init_search_input()
+    {
+    // 创建 datalist 元素，并设置其 id
+    const datalist = document.createElement('datalist');
+    datalist.id = 'input_filter';
+
+    // 创建 datalist 可选项，并追加到 datalist 元素中
+    for (let [key, value] of Object.entries(artinfoMap)) {
+
+        const option1 = document.createElement('option');
+        option1.value = value._name;
+        datalist.appendChild(option1);
+    }
+
+    // 将 datalist 元素追加到 input 元素的父元素中
+    parent.appendChild(datalist);
+
+    // 设置 input 元素的 datalist 属性
+    input.setAttribute('list', 'input_filter');
+    }
+
+    function search_action()
+    {
+        backtoMenu();
+        let istr = input.value;
+        for(let [key, value] of Object.entries(artinfoMap))
+        {
+            if(value._name.includes(istr) == false)
+                document.getElementById(key).style.display='none'
+        }
+        if(istr == '')
+        {
+            for(let [key, value] of Object.entries(artinfoMap))
+                document.getElementById(key).style.display='block'
+        }
+    }
+    init_search_input();
+
+    input.addEventListener('input',()=>{
+        if(input.value == '')
+        {
+            search_action();
+        }
+    });
+
+    search_btn.addEventListener('click',()=>{
+        search_action();
+    })
+
+</script>
+
+</html>
