@@ -1,0 +1,3 @@
+[submodule "responsitories/MD2Html"]
+	path = responsitories/MD2Html
+	url = https://github.com/mqys/MarkTrans.git
