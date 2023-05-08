@@ -5,7 +5,7 @@
 #include <string>
 
 #include <curl/curl.h>
-#include <json/json.h>
+#include "jsoncpp/json/json.h"
 
 struct memory {
   char *response;
@@ -129,7 +129,7 @@ inline std::string chat_gpt_call(CURL* curl, std::vector<std::string>& talks, co
                 Json::Value iv;
                 Json::CharReaderBuilder rbuilder;
                 auto ir = rbuilder.newCharReader();
-                Json::String error_code;
+                std::string error_code;
                 ir->parse(&response.front(), &response.back(), &iv, &error_code);
                 auto key_res = iv["choices"][0]["message"];
                 response = key_res["content"].asCString();
