@@ -1,11 +1,15 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include "webserver.h"
-
 extern long g_port_num;
 
 using namespace std;
+
+enum actor_mode
+{
+    reactor,
+    proactor
+};
 
 class Config
 {
@@ -43,7 +47,7 @@ public:
     int close_log;
 
     //并发模型选择
-    int actor_model;
+    actor_mode actor_model;
 };
 
 #endif

@@ -1,9 +1,11 @@
 #include "config.h"
 
-long g_port_num = 9006;
+#include "webserver.h"
+
+long g_port_num = 80;
 
 Config::Config(){
-    //端口号,默认9006
+    //端口号
     PORT = g_port_num;
 
     //日志写入方式，默认同步
@@ -31,7 +33,7 @@ Config::Config(){
     close_log = 0;
 
     //并发模型,默认是proactor
-    actor_model = 0;
+    actor_model = actor_mode::proactor;
 }
 
 void Config::parse_arg(int argc, char*argv[]){
@@ -78,7 +80,7 @@ void Config::parse_arg(int argc, char*argv[]){
         }
         case 'a':
         {
-            actor_model = atoi(optarg);
+            actor_model = static_cast<actor_mode>(atoi(optarg));
             break;
         }
         default:
