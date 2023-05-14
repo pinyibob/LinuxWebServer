@@ -13,7 +13,7 @@
         <h2 style="text-align:left;">是真名士自风流</h2>
         <div style="flex-wrap: wrap;position: relative;display: flex;align-items: center;">
             <div id="menu">
-                <ul id = 'head_menu'>
+                <ul id='head_menu'>
                     <li class="head_menu_item" id="head_filter_back" onclick="filterCnt(';')"> <a>单项筛选器</a> </li>
                     <li class="head_menu_item" onclick="filterCnt('win client')"> <a>win client</a> </li>
                     <li class="head_menu_item" onclick="filterCnt('linux server')"> <a>Linux server</a> </li>
@@ -42,16 +42,7 @@
                     onclick="backtoMenu()">回到主页</button>
             </div>
             <div id="artical_menu" style="flex:60%;max-width:75%;margin-right:10%;">
-                <p class="content-p" id="article-4">2023-04-11 <a onclick="loadHtml('/articles/linuxServer_keyMethod.md')">LinuxServer中的关键词</a><small>字数：，预计阅读时间</small>
-                </p>
-                <p class="content-p" id="article-0">2023-04-11 <a onclick="loadHtml('/articles/advanced_linux_io_function.html')">linux中的高级io函数</a><small>字数：，预计阅读时间</small>
-                </p>
-                <p class="content-p" id="article-1">2023-04-11 <a onclick="loadHtml('/articles/common_structureOfServer.html')">常规服务器架构</a><small>字数：，预计阅读时间</small>
-                </p>
-                <p class="content-p" id="article-2">2023-04-29 <a onclick="loadHtml('/articles/china_house.html')">房地产的话题包含的关键切入点</a><small>字数：，预计阅读时间</small>
-                </p>
-                <p class="content-p" id="article-3">2023-04-29 <a onclick="loadHtml('/articles/rumors_about_china_house.html')">房地产话题的常规营销话术</a><small>字数：，预计阅读时间</small>
-                </p>
+
             </div>
             <div style="flex:20%;max-width:25%;">
                 <ul>推荐排序
@@ -79,11 +70,11 @@
 
 </body>
 <style>
-    #head_menu{
-        display:flex;
-        flex-direction:row;
+    #head_menu {
+        display: flex;
+        flex-direction: row;
         padding-left: 5px;
-        list-style:none;
+        list-style: none;
     }
 
     .head_menu_item {
@@ -102,10 +93,10 @@
         /*max-width: 720px;*/
     }
 
-    #artical_menu a{
-        color:blue;
+    #artical_menu a {
+        color: blue;
         text-decoration: underline;
-        cursor:pointer;
+        cursor: pointer;
         margin-right: 40px;
     }
 
@@ -129,30 +120,58 @@
     #footer {
         text-align: center;
     }
-    
 </style>
 <script>
     class article_info {
-        constructor(name, adr, readTimes, tag) {
+        constructor(name, adr, date, readTimes, tag) {
             this._adr = adr;
             this._name = name;
             this._read_times = readTimes;
             this._tag = tag;
+            this._date = date;
         }
     }
 
     let artinfoMap = {
-        "article-3": new article_info("LinuxServer中的关键词", "linuxServer_keyMethod", 0, "linux server;"),
-        "article-0": new article_info("linux中的高级io函数", "advanced_linux_io_function", 0, "linux server;"),
-        "article-1": new article_info("常规服务器架构", "common_structureOfServer", 0, "linux server;"),
-        "article-2": new article_info("房地产的话题包含的关键切入点", "china_house", 0, "sight;"),
-        "article-3": new article_info("房地产话题的常规营销话术", "rumors_about_china_house", 0, "sight;")
+        "article-5": new article_info("mysql忘记密码", "mysql_foget_pw.md", '2023-5-8', 0, ";"),
+        "article-4": new article_info("LinuxServer中的关键词", "linuxServer_keyMethod.md", '2023-5-7', 0, "linux server;"),
+        "article-2": new article_info("房地产的话题包含的关键切入点", "china_house.md", '2023-4-3', 0, "sight;"),
+        "article-0": new article_info("linux中的高级io函数", "advanced_linux_io_function.md", '2023-4-3', 0, "linux server;"),
+        "article-1": new article_info("常规服务器架构", "common_structureOfServer.md", '2023-4-3', 0, "linux server;"),
+        //"article-3": new article_info("房地产话题的常规营销话术", "rumors_about_china_house.html", '2023-4-3', 0, "sight;")
     }
 
+    let article_menu = document.getElementById("artical_menu");
+    function init_content_menu() {
+        for (let [key, value] of Object.entries(artinfoMap)) {
+            let newitem = document.createElement('p');
+            newitem.id = key;
+            newitem.classList.add("content-p");
+            newitem.innerText = value._date;
 
-    let i1 = document.getElementById("menu");
-    const title = document.title;
+            let newa = document.createElement('a');
+            newa.innerText = value._name;
+            //newa.onclick = loadHtml('articles/' + value.adr);
+            newitem.appendChild(newa);
+            newa.style.marginLeft = "10px";
 
+            let newsmall = document.createElement('small');
+            newsmall.innerText = '字数：%i， 阅读时间：%s'
+            newitem.appendChild(newsmall);
+
+            article_menu.appendChild(newitem);
+
+            newa.addEventListener("click", function(){
+                loadHtml('articles/' + value._adr);
+            });
+        }
+    }
+
+    init_content_menu();
+
+    //let i1 = document.getElementById("menu");
+    //const title = document.title;
+    //html页面标题
     document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             document.title = "请不要离开我  QAQ";
@@ -168,7 +187,6 @@
         xhr.onreadystatechange = function () {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 menu = document.getElementById("artical_menu");
-
                 menu.style.display = 'none';
 
                 document.getElementById("artical_content_total").style.display = 'block';
@@ -214,52 +232,47 @@
     let search_btn = document.getElementById("btn_search");
     // 获取 input 元素和其父元素
     const parent = input.parentNode;
-    function init_search_input()
-    {
-    // 创建 datalist 元素，并设置其 id
-    const datalist = document.createElement('datalist');
-    datalist.id = 'input_filter';
+    function init_search_input() {
+        // 创建 datalist 元素，并设置其 id
+        const datalist = document.createElement('datalist');
+        datalist.id = 'input_filter';
 
-    // 创建 datalist 可选项，并追加到 datalist 元素中
-    for (let [key, value] of Object.entries(artinfoMap)) {
+        // 创建 datalist 可选项，并追加到 datalist 元素中
+        for (let [key, value] of Object.entries(artinfoMap)) {
 
-        const option1 = document.createElement('option');
-        option1.value = value._name;
-        datalist.appendChild(option1);
+            const option1 = document.createElement('option');
+            option1.value = value._name;
+            datalist.appendChild(option1);
+        }
+
+        // 将 datalist 元素追加到 input 元素的父元素中
+        parent.appendChild(datalist);
+
+        // 设置 input 元素的 datalist 属性
+        input.setAttribute('list', 'input_filter');
     }
 
-    // 将 datalist 元素追加到 input 元素的父元素中
-    parent.appendChild(datalist);
-
-    // 设置 input 元素的 datalist 属性
-    input.setAttribute('list', 'input_filter');
-    }
-
-    function search_action()
-    {
+    function search_action() {
         backtoMenu();
         let istr = input.value;
-        for(let [key, value] of Object.entries(artinfoMap))
-        {
-            if(value._name.includes(istr) == false)
-                document.getElementById(key).style.display='none'
+        for (let [key, value] of Object.entries(artinfoMap)) {
+            if (value._name.includes(istr) == false)
+                document.getElementById(key).style.display = 'none'
         }
-        if(istr == '')
-        {
-            for(let [key, value] of Object.entries(artinfoMap))
-                document.getElementById(key).style.display='block'
+        if (istr == '') {
+            for (let [key, value] of Object.entries(artinfoMap))
+                document.getElementById(key).style.display = 'block'
         }
     }
     init_search_input();
 
-    input.addEventListener('input',()=>{
-        if(input.value == '')
-        {
+    input.addEventListener('input', () => {
+        if (input.value == '') {
             search_action();
         }
     });
 
-    search_btn.addEventListener('click',()=>{
+    search_btn.addEventListener('click', () => {
         search_action();
     })
 
