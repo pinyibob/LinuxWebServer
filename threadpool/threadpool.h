@@ -130,7 +130,7 @@ void threadpool<T>::run()
                 if (request->read_once())
                 {
                     request->improv = 1;
-                    connectionRAII mysqlcon(&request->mysql, m_connPool);
+                    //connectionRAII mysqlcon(&request->mysql, m_connPool);
                     request->process();
                 }
                 else
@@ -154,7 +154,7 @@ void threadpool<T>::run()
         }
         else
         {
-            connectionRAII mysqlcon(&request->mysql, m_connPool);
+            //connectionRAII mysqlcon(&request->mysql, m_connPool);
             request->process();
         }
     }
