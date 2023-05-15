@@ -5,12 +5,12 @@
     <meta charset="utf-8">
     <meta all right resolved，转载请备注原链接 />
     <meta 编程记录；win客户端&&linux服务器&&音视频&&cpp&&python>
-    <title>pinyibob的回忆录</title>
+    <title>pinyibob's blog</title>
 </head>
 
 <body id="meta-body">
     <header id='keyHeader'>
-        <h2 style="text-align:left;">是真名士自风流</h2>
+        <h2 id = 'index_header' style="text-align:left;">是真名士自风流</h2>
         <div style="flex-wrap: wrap;position: relative;display: flex;align-items: center;">
             <div id="menu">
                 <ul id='head_menu'>
@@ -161,7 +161,6 @@
 
             let newa = document.createElement('a');
             newa.innerText = value._name;
-            //newa.onclick = loadHtml('articles/' + value.adr);
             newitem.appendChild(newa);
             newa.style.marginLeft = "10px";
 
@@ -182,14 +181,31 @@
     //let i1 = document.getElementById("menu");
     //const title = document.title;
     //html页面标题
+    const store_headers = [
+        "是真名士自风流",
+        "自我怀疑，消极思考毫无益处",
+        "成为这个世界美丽的一部分",
+        "朝闻道夕死可矣",
+        "寒潭渡鹤影，冷月葬花魂",
+        "毕竟too young, sometimes naive",
+        "顺势而为",
+        "来者不拒，去着不留"
+    ]
+    let ha = document.getElementById('index_header');
+    function refrash_header()
+    {
+        var index = Math.floor(Math.random() * store_headers.length);
+        ha.innerText = store_headers[index];
+    }
+
     document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
             document.title = "请不要离开我  QAQ";
         } else {
             document.title = "欢迎回来 ~o( =∩ω∩= )m";
         }
+        refrash_header();
     });
-
 
     function loadHtml(url) {
         // 创建XMLHttpRequest对象
@@ -214,6 +230,7 @@
     function backtoMenu() {
         document.getElementById("artical_content_total").style.display = 'none';
         article_menu.style.display = 'block';
+        refrash_header();
     };
 
     function filterCnt(tag) {
