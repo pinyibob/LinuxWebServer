@@ -41,7 +41,7 @@
                 <button id="back_home2" style="margin-left:auto;text-align:right;display: block;"
                     onclick="backtoMenu()">回到主页</button>
             </div>
-            <div id="artical_menu" style="flex:60%;max-width:75%;margin-right:10%;">
+            <div id="artical_menu" style="flex:60%;max-width:75%;margin-right:5%;">
 
             </div>
             <div style="flex:20%;max-width:25%;">
@@ -132,24 +132,69 @@
         }
     }
 
-    let artinfoMap = {
-        "article-5": new article_info("mysql忘记密码", "mysql_foget_pw.md", '2023-5-8', 0, ";"),
-        "article-4": new article_info("LinuxServer中的关键词", "linuxServer_keyMethod.md", '2023-5-7', 0, "linux server;"),
-        "article-2": new article_info("房地产的话题包含的关键切入点", "china_house.md", '2023-4-3', 0, "sight;"),
-        "article-0": new article_info("linux中的高级io函数", "advanced_linux_io_function.md", '2023-4-3', 0, "linux server;"),
-        "article-6": new article_info("开启proxy时python链接失败", "CFW_CURL_BUG.md", '2023-3-10', 0, "win client;"),
-        "article-7": new article_info("svg图元解析", "svg_transform_matrix.md", '2023-3-9', 0, "sight;"),
-        "article-8": new article_info("Qt中的C++程序设计", "qt_program_design_perls.md", '2022-12-29', 0, "win client;"),
-        "article-10": new article_info("point_registration ICP", "icp.md", '2022-3-21', 0, "sight;"),
-        "article-9": new article_info("奇异值分解及应用", "eigen_svd.md", '2022-3-8', 0, "sight;"),
-        "article-12": new article_info("基础锁概念一览（c++）", "cpp_lock.md", '2022-2-1', 0, "win client;"),
-        "article-11": new article_info("rbtree(linux)核心代码剥离", "linux_rbtree.md", '2022-1-25', 0, "win client;"),
-        "article-13": new article_info("qt一种通用自定义控件方法---setproperty", "qt_set_property.md", '2021-2-18', 0, "win client;"),
-        "article-14": new article_info("qt全局消息截获示例---自定义tooltip", "qt_eventfilter_eg.md", '2021-2-18', 0, "win client;"),
-        "article-15": new article_info("ts文件和xlsx文件格式互换工具", "ts_xlsx_file_trans.md", '2021-2-16', 0, "win client;"),
-        "article-16": new article_info("qt快捷键创建，冲突解决", "qt_short_cut.md", '2021-2-16', 0, "win client;"),
-        //"article-3": new article_info("房地产话题的常规营销话术", "rumors_about_china_house.html", '2023-4-3', 0, "sight;")
+    var artinfoMap = []
+
+    function init_article_info()
+    {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function ()
+        {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                // 解析 JSON 字符串并将其转换为对象
+                var jsonData = JSON.parse(xhr.responseText);
+
+                for(let i = 0; i < jsonData.length; i++)
+                {
+                    var idata = jsonData[i];
+                    console.log(idata['article_id']);
+                    var istr = (idata['title']);
+                    var tmp = new article_info();
+                    tmp._adr = idata['file_name'];
+                    tmp._read_times = idata['view_times'];
+                    tmp._date = idata['create_date'];
+                    tmp._name = idata['title'];
+                    tmp._tag = idata['tag'];
+
+                    artinfoMap[idata['article_id']] = tmp;
+                }
+                console.log(artinfoMap);
+
+            }
+        };
+
+        // 发送GET请求
+        xhr.open("GET", '/articles_info_request', false);
+        xhr.send();
+
+        /*
+        fetch('/articles_info_request', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }})
+            .then(response => response.text())
+            .then(jsonstr => {
+                //if(jsonstr.ok)
+                {
+                    const clearedJsonStr = jsonstr.replace(/\0/g, ''); // 删除 NUL 字符
+                    return JSON.parse(clearedJsonStr); // 解析 JSON 字符串并将其转换为对象
+                }
+                //else
+                //    throw new Error('Network response was not ok.');
+            }).then(jsonData =>{
+                console.log(jsonData);
+                var tmp = new article_info();
+                tmp._adr = jsonData['file_name'];
+                tmp._read_times = jsonData['view_times'];
+                tmp._date = jsonData['create_date'];
+                tmp._name = jsonData['title'];
+                tmp._tag = jsonData['tag'];
+
+                artinfoMap[jsonData['article_id']] = tmp;
+            });
+        */
     }
+    init_article_info();
 
     let article_menu = document.getElementById("artical_menu");
     function init_content_menu() {
@@ -165,7 +210,8 @@
             newa.style.marginLeft = "10px";
 
             let newsmall = document.createElement('small');
-            newsmall.innerText = '字数：%i， 阅读时间：%s'
+            //newsmall.innerText = '字数：%i， 阅读时间：%s'
+            //newsmall.innerText = '字数：' + '' + '， 阅读时间：' + ;
             newitem.appendChild(newsmall);
 
             article_menu.appendChild(newitem);
@@ -189,7 +235,8 @@
         "寒潭渡鹤影，冷月葬花魂",
         "毕竟too young, sometimes naive",
         "顺势而为",
-        "来者不拒，去着不留"
+        "来者不拒，去者不留",
+        "芝兰生于深谷，不以无人而不芳"
     ]
     let ha = document.getElementById('index_header');
     function refrash_header()
