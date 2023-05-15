@@ -88,6 +88,7 @@ public:
         return &m_address;
     }
     void initmysql_result(connection_pool *connPool);
+    Json::Value article_info_sql();
     int timer_flag;
     int improv;
 
@@ -119,7 +120,7 @@ private:
 public:
     static int m_epollfd;
     static int m_user_count;
-    MYSQL *mysql;
+    //MYSQL *mysql;
     int m_state;  //读为0, 写为1
 
 private:

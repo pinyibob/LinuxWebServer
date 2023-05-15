@@ -25,7 +25,6 @@ map<string, string> users;
 
 void http_conn::initmysql_result(connection_pool *connPool)
 {
-    return;
     //先从连接池中取一个连接
     MYSQL *mysql = NULL;
     connectionRAII mysqlcon(&mysql, connPool);
@@ -48,9 +47,6 @@ void http_conn::initmysql_result(connection_pool *connPool)
     //从结果集中获取下一行，将对应的用户名和密码，存入map中
     while (MYSQL_ROW row = mysql_fetch_row(result))
     {
-        string temp1(row[0]);
-        string temp2(row[1]);
-        users[temp1] = temp2;
     }
 }
 
@@ -144,7 +140,6 @@ void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int TRIGMo
 //check_state默认为分析请求行状态
 void http_conn::init()
 {
-    mysql = NULL;
     bytes_to_send = 0;
     bytes_have_send = 0;
     m_check_state = CHECK_STATE_REQUESTLINE;
@@ -464,7 +459,21 @@ http_conn::HTTP_CODE http_conn::do_request()
     {
         strncpy(m_real_file + len, m_url, strlen(m_url));
     }
-    else if(strncmp(cmd_name, "articles", strlen("articles")) == 0)
+    else if(strcmp(cmd_name, "articles_info_request") == 0)
+    {
+        auto iv = article_info_sql();
+        
+        Json::StreamWriterBuilder iw;
+        iw.settings_["indentation"] = "";
+        auto iw2 = iw.newStreamWriter();
+        std::stringstream ss;
+        auto res = iw2->write(iv, &ss);
+
+        auto str_input = ss.str();
+        write_content_to_buff(str_input.c_str());
+        return MSG_REQUEST;
+    }
+    else if (strncmp(cmd_name, "articles", strlen("articles")) == 0)
     {
         strncpy(m_real_file + len, m_url, strlen(m_url));
         Document iw(m_real_file);
@@ -479,6 +488,7 @@ http_conn::HTTP_CODE http_conn::do_request()
     if (stat(m_real_file, &m_file_stat) < 0)
     {
         const char* rep = "手动档服务器，没有option post，文件服务也只能访问root内容，不要再试了，你再这样我报警了, 八嘎！";
+        write_content_to_buff(rep);
 
         return MSG_REQUEST;
     }
@@ -559,6 +569,50 @@ bool http_conn::write()
             }
         }
     }
+}
+Json::Value http_conn::article_info_sql()
+{
+    auto connPool = connection_pool::GetInstance();
+
+    //先从连接池中取一个连接
+    MYSQL *mysql = NULL;
+    connectionRAII mysqlcon(&mysql, connPool);
+
+    //在user表中检索username，passwd数据，浏览器端输入
+    if (mysql_query(mysql, "SELECT article_id, title, file_name,"
+     "create_date, last_edit_date, view_times, tag, word_nums, read_timespend "
+     "FROM article_info"))
+    {
+        LOG_ERROR("SELECT error:%s\n", mysql_error(mysql));
+    }
+
+    //从表中检索完整的结果集
+    MYSQL_RES *result = mysql_store_result(mysql);
+
+    //返回结果集中的列数
+    int num_fields = mysql_num_fields(result);
+
+    //返回所有字段结构的数组
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+
+    //从结果集中获取下一行，将对应的用户名和密码，存入map中
+    Json::Value res_;
+    while (MYSQL_ROW row = mysql_fetch_row(result))
+    {
+        Json::Value res;
+        res["article_id"] = row[0];
+        res["title"] = row[1];
+        res["file_name"] = row[2];
+        res["create_date"] = row[3];
+        res["last_edit_date"] = row[4];
+        res["view_times"] = row[5];
+        res["tag"] = row[6];
+        //res["word_nums"] = row[7];
+        //res["read_timespend"] = row[8];
+        res_.append(res);
+    }
+
+    return res_;
 }
 bool http_conn::add_response(const char *format, ...)
 {
@@ -668,6 +722,13 @@ bool http_conn::process_write(HTTP_CODE ret)
                 return false;
         }
     }
+    //{
+    //    add_status_line(200, ok_200_title);
+    //    add_headers_response(m_file_stat.st_size);
+    //    if(!add_content(m_send_content_buff))
+    //        return false;
+    //    break;
+    //}
 
     default:
         return false;
@@ -684,10 +745,10 @@ void http_conn::write_content_to_buff(const char *rep)
     if(!rep) return;
 
     auto ilen = strlen(rep);
-    auto bufflen = ilen + 1;
-    m_file_stat.st_size = bufflen;
-    m_send_content_buff = new char[ilen + 1];
-    m_send_content_buff[ilen] = '\0';
+    //auto bufflen = ilen + 1;
+    m_file_stat.st_size = ilen;
+    m_send_content_buff = new char[ilen];
+    //m_send_content_buff[ilen] = '\0';
     memcpy(m_send_content_buff, rep, ilen);
 }
 
