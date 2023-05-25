@@ -197,7 +197,8 @@
     init_article_info();
 
     let article_menu = document.getElementById("artical_menu");
-    function init_content_menu() {
+    function init_content_menu()
+    {
         for (let [key, value] of Object.entries(artinfoMap)) {
             let newitem = document.createElement('p');
             newitem.id = key;
