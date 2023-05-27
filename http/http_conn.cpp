@@ -471,6 +471,7 @@ http_conn::HTTP_CODE http_conn::do_request()
 
         auto str_input = ss.str();
         write_content_to_buff(str_input.c_str());
+        //write_content_to_buff("def");
         return MSG_REQUEST;
     }
     else if (strncmp(cmd_name, "articles", strlen("articles")) == 0)
@@ -588,6 +589,10 @@ Json::Value http_conn::article_info_sql()
 
     //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
+    if(result == NULL)
+    {
+        assert(false);
+    }
 
     //返回结果集中的列数
     int num_fields = mysql_num_fields(result);
@@ -611,6 +616,8 @@ Json::Value http_conn::article_info_sql()
         //res["read_timespend"] = row[8];
         res_.append(res);
     }
+
+    mysql_free_result(result);
 
     return res_;
 }
@@ -726,6 +733,13 @@ bool http_conn::process_write(HTTP_CODE ret)
     //    add_status_line(200, ok_200_title);
     //    add_headers_response(m_file_stat.st_size);
     //    if(!add_content(m_send_content_buff))
+    //    {
+    //        m_iv[0].iov_base = m_write_buf;
+    //        m_iv[0].iov_len = m_write_idx;
+    //        //m_iv[1].iov_base = m_send_content_buff;
+    //        //m_iv[1].iov_len = m_file_stat.st_size;
+    //    }
+    //    else
     //        return false;
     //    break;
     //}
