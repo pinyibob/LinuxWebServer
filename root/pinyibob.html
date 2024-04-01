@@ -18,8 +18,8 @@
                     <li class="head_menu_item" onclick="filterCnt('win client')"> <a>win client</a> </li>
                     <li class="head_menu_item" onclick="filterCnt('linux server')"> <a>Linux server</a> </li>
                     <!--li id="head_menu_item"> <a href="/c.asp" title="">音视频</a> </li-->
+                    <li class="head_menu_item" onclick="filterCnt('cg')"> <a>图形学</a> </li>
                     <li class="head_menu_item" onclick="filterCnt('sight')"> <a>见闻</a> </li>
-                    <li class="head_menu_item" onclick="filterCnt('game')"> <a>游戏</a> </li>
                 </ul>
             </div>
             <div style="margin-left:auto;margin-right:5px;align-items:center;">
@@ -146,7 +146,6 @@
                 for(let i = 0; i < jsonData.length; i++)
                 {
                     var idata = jsonData[i];
-                    console.log(idata['article_id']);
                     var istr = (idata['title']);
                     var tmp = new article_info();
                     tmp._adr = idata['file_name'];
@@ -157,7 +156,6 @@
 
                     artinfoMap[idata['article_id']] = tmp;
                 }
-                console.log(artinfoMap);
 
             }
         };
@@ -196,10 +194,29 @@
     }
     init_article_info();
 
+    var keys = [];
+
+    for(var [key, value] of Object.entries(artinfoMap)){  
+        keys.push(key) 
+    }
+    keys.sort(function(a, b) {
+        let numA = parseInt(a.split('-')[1]); // 获取a中的数字
+        let numB = parseInt(b.split('-')[1]); // 获取b中的数字
+        return numB - numA; // 按数字降序排列
+    });
+
     let article_menu = document.getElementById("artical_menu");
     function init_content_menu()
     {
-        for (let [key, value] of Object.entries(artinfoMap)) {
+        var i = 0;
+        for(var ele of keys)
+        {
+            var key = ele;
+            let value = artinfoMap[key];
+
+            //if(key == 'article-2')
+            //    continue;
+
             let newitem = document.createElement('p');
             newitem.id = key;
             newitem.classList.add("content-p");
@@ -221,6 +238,31 @@
                 loadHtml('articles/' + value._adr);
             });
         }
+/*
+        for (let [key, value] of artinfoMap) {
+            console.log(key);
+            let newitem = document.createElement('p');
+            newitem.id = key;
+            newitem.classList.add("content-p");
+            newitem.innerText = value._date;
+
+            let newa = document.createElement('a');
+            newa.innerText = value._name;
+            newitem.appendChild(newa);
+            newa.style.marginLeft = "10px";
+
+            let newsmall = document.createElement('small');
+            //newsmall.innerText = '字数：%i， 阅读时间：%s'
+            //newsmall.innerText = '字数：' + '' + '， 阅读时间：' + ;
+            newitem.appendChild(newsmall);
+
+            article_menu.appendChild(newitem);
+
+            newa.addEventListener("click", function(){
+                loadHtml('articles/' + value._adr);
+            });
+        }
+            */
     }
 
     init_content_menu();
@@ -231,13 +273,11 @@
     const store_headers = [
         "是真名士自风流",
         "自我怀疑，消极思考毫无益处",
-        "成为这个世界美丽的一部分",
         "朝闻道夕死可矣",
+        "才自精明志自高, 千里东风一梦遥",
         "寒潭渡鹤影，冷月葬花魂",
         "毕竟too young, sometimes naive",
-        "顺势而为",
-        "来者不拒，去者不留",
-        "芝兰生于深谷，不以无人而不芳"
+        "蓬门未识绮罗香，每日省身必自伤",
     ]
     let ha = document.getElementById('index_header');
     function refrash_header()
